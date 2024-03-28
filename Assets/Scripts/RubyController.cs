@@ -9,6 +9,11 @@ public class RubyController : MonoBehaviour
     public int maxHealth = 5;
     
     public GameObject projectilePrefab;
+
+    public AudioClip throwSound;
+    public AudioClip hitSound;
+    public AudioClip walkSound;
+    bool isMoving;
     
     public int health { get { return currentHealth; }}
     int currentHealth;
@@ -23,21 +28,48 @@ public class RubyController : MonoBehaviour
     
     Animator animator;
     Vector2 lookDirection = new Vector2(1,0);
+
+    AudioSource audioSource;
     
     // Start is called before the first frame update
     void Start()
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        
         currentHealth = maxHealth;
+
+        audioSource= GetComponent<AudioSource>();
     }
+
+
 
     // Update is called once per frame
     void Update()
     {
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
+
+        if(horizontal != 0 || vertical != 0)
+        {
+            isMoving = true;
+        }else{
+            isMoving = false;
+        }
+
+         
+
+        if(isMoving == true && !audioSource.isPlaying)
+        {
+            PlaySound(walkSound);
+        }
+        if(isMoving == false)
+        {
+            audioSource.Stop();
+        }
+
+       
+            
+        
         
         Vector2 move = new Vector2(horizontal, vertical);
         
@@ -45,6 +77,8 @@ public class RubyController : MonoBehaviour
         {
             lookDirection.Set(move.x, move.y);
             lookDirection.Normalize();
+
+            PlaySound(walkSound);
         }
         
         animator.SetFloat("Look X", lookDirection.x);
@@ -95,6 +129,8 @@ public class RubyController : MonoBehaviour
             
             isInvincible = true;
             invincibleTimer = timeInvincible;
+
+            PlaySound(hitSound);
         }
         
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
@@ -110,5 +146,12 @@ public class RubyController : MonoBehaviour
         projectile.Launch(lookDirection, 300);
 
         animator.SetTrigger("Launch");
+
+        PlaySound(throwSound);
+    }
+
+    public void PlaySound(AudioClip clip)
+    {
+        audioSource.PlayOneShot(clip);
     }
 }
